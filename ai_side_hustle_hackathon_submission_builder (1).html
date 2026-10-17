@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open-Source AI Side-Hustle Submission Builder</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-full flex flex-col custom-scrollbar overflow-x-hidden">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] transition-transform duration-300 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 border border-white/20">
+        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        <span id="toast-msg" class="font-medium text-xs sm:text-sm">Action completed successfully!</span>
+    </div>
+
+    <!-- Top Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-500 p-0.5 shadow-lg shadow-indigo-500/20">
+                <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-emerald-400">
+                    <i data-lucide="terminal" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div>
+                <h1 class="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
+                    Open AI Side-Hustle Architect
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Build & Viability Score Calculator for Open-Source AI Hackathons</p>
+            </div>
+        </div>
+
+        <!-- Quick Presets Dropdown & Reset -->
+        <div class="flex items-center space-x-2">
+            <div class="relative inline-block text-left">
+                <button onclick="togglePresetMenu()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-xs font-medium transition flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                    <span class="hidden sm:inline">Load Preset Idea</span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </button>
+                <div id="presetMenu" class="hidden absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl z-50 py-2 text-xs">
+                    <div class="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Side Hustle Ideas</div>
+                    <button onclick="loadPreset('invoice')" class="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2">
+                        <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i>
+                        <span>Local Invoice & Receipt Sorter</span>
+                    </button>
+                    <button onclick="loadPreset('etsy')" class="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-pink-400"></i>
+                        <span>Etsy/eBay SEO Listing Generator</span>
+                    </button>
+                    <button onclick="loadPreset('menu')" class="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2">
+                        <i data-lucide="utensils" class="w-4 h-4 text-amber-400"></i>
+                        <span>Local Restaurant Menu Translator</span>
+                    </button>
+                    <button onclick="loadPreset('leads')" class="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2">
+                        <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Local Business Lead Enricher</span>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="resetForm()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition" title="Reset Inputs">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Panel: Submission Customizer Form -->
+        <section class="lg:col-span-6 space-y-6">
+            
+            <!-- Tech Viability Score Dashboard Banner -->
+            <div class="glass-panel p-5 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-slate-900/90 to-indigo-950/40 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center space-x-1.5">
+                        <i data-lucide="gauge" class="w-4 h-4"></i>
+                        <span>Project Viability & Hardware Meter</span>
+                    </span>
+                    <span id="scoreBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        High Potential
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 pt-1">
+                    <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 block mb-0.5">Estimated RAM</span>
+                        <span id="ramEstimate" class="font-extrabold text-sm sm:text-base text-purple-400">8 GB RAM</span>
+                    </div>
+                    <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 block mb-0.5">Offline Capability</span>
+                        <span id="offlineScore" class="font-extrabold text-sm sm:text-base text-emerald-400">100% Local</span>
+                    </div>
+                    <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 block mb-0.5">Profit Index</span>
+                        <span id="profitIndex" class="font-extrabold text-sm sm:text-base text-amber-400">92 / 100</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inputs Form Container -->
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl space-y-5">
+                
+                <!-- Section 1: Project & Tech Stack -->
+                <div class="space-y-4 pb-5 border-b border-slate-800">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i>
+                        <span>1. Project & Open-Source Stack</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Project Name</label>
+                        <input type="text" id="inputProjName" value="LedgerVault AI" oninput="updateAll()" placeholder="e.g. PrivacySort, EtsyGen" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Open-Weight Model</label>
+                            <select id="selectModel" onchange="updateAll()" class="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-200 text-xs focus:outline-none focus:border-emerald-500">
+                                <option value="Llama 3.1 8B Instruct (Meta)">Llama 3.1 8B Instruct (Meta)</option>
+                                <option value="Mistral 7B v0.3 / Hermes 2">Mistral 7B v0.3 / Hermes 2</option>
+                                <option value="Phi-3.5 Mini (Microsoft - 3.8B)">Phi-3.5 Mini (Ultra-Light)</option>
+                                <option value="DeepSeek-R1 Distill Qwen 7B">DeepSeek-R1 Distill Qwen 7B</option>
+                                <option value="Qwen 2.5 Coder 7B">Qwen 2.5 Coder 7B</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Framework / Harness</label>
+                            <select id="selectFramework" onchange="updateAll()" class="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-200 text-xs focus:outline-none focus:border-emerald-500">
+                                <option value="Ollama + Local Python SDK">Ollama + Local Python</option>
+                                <option value="LangChain / LangGraph (Open Source)">LangChain / LangGraph</option>
+                                <option value="LlamaIndex + ChromaDB (Local Vector)">LlamaIndex + ChromaDB</option>
+                                <option value="CrewAI Local Multi-Agent">CrewAI Multi-Agent Harness</option>
+                                <option value="llama.cpp / Native C++ Binding">llama.cpp Native</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Execution Toggles -->
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <label class="flex items-center space-x-2.5 bg-slate-950/60 border border-slate-800 p-3 rounded-2xl cursor-pointer hover:border-slate-700 transition">
+                            <input type="checkbox" id="checkOffline" onchange="updateAll()" checked class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700">
+                            <span class="text-xs text-slate-300 font-medium">100% Offline / Local</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 bg-slate-950/60 border border-slate-800 p-3 rounded-2xl cursor-pointer hover:border-slate-700 transition">
+                            <input type="checkbox" id="checkZeroCost" onchange="updateAll()" checked class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700">
+                            <span class="text-xs text-slate-300 font-medium">$0 API Token Overhead</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section 2: Problem & Side-Hustle Purpose -->
+                <div class="space-y-4 pb-5 border-b border-slate-800">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                        <i data-lucide="target" class="w-4 h-4 text-indigo-400"></i>
+                        <span>2. Problem & Target Persona</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Target Persona / Customer</label>
+                        <input type="text" id="inputTarget" value="Freelance Designers & Small Consultants" oninput="updateAll()" placeholder="e.g. Freelancers, Etsy Sellers, Local Restaurants" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Tedious Problem Solved</label>
+                        <textarea id="inputProblem" rows="2" oninput="updateAll()" placeholder="What annoying manual task does this eliminate?" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-indigo-500 transition custom-scrollbar">Spending hours sorting through tax invoices, client receipts, and manually copying dates and totals into accounting software.</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">How the Solution Operates</label>
+                        <textarea id="inputSolution" rows="2" oninput="updateAll()" placeholder="How does the AI solve this?" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-indigo-500 transition custom-scrollbar">Processes scanned PDFs/images locally using local OCR and Llama-3.1 to extract vendors, tax totals, and category tags directly into clean CSV files.</textarea>
+                    </div>
+                </div>
+
+                <!-- Section 3: Open Innovation Advantage -->
+                <div class="space-y-4 pb-5 border-b border-slate-800">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i>
+                        <span>3. Why Open Innovation Beats Closed APIs</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Data Privacy Advantage</label>
+                        <input type="text" id="inputPrivacy" value="Client financial records stay strictly on the local laptop—zero cloud upload or leak risk." oninput="updateAll()" placeholder="Why is local privacy crucial here?" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-purple-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Economic & Fine-Tuning Advantage</label>
+                        <input type="text" id="inputEconomic" value="Unlimited bulk receipt sorting with $0 per-token charges, allowing flat-rate pricing." oninput="updateAll()" placeholder="Why open models make the business viable?" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-purple-500 transition">
+                    </div>
+                </div>
+
+                <!-- Section 4: First User & Validation -->
+                <div class="space-y-4">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                        <span>4. First User Validation & Monetization</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Testing Status</label>
+                            <select id="selectStatus" onchange="updateAll()" class="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-200 text-xs focus:outline-none focus:border-amber-500">
+                                <option value="Tested with 1st Live User">Tested with 1st Live User</option>
+                                <option value="Beta Testing with Community">Beta Testing with Community</option>
+                                <option value="Validating with Target Clients">Validating with Target Clients</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Pricing Strategy</label>
+                            <input type="text" id="inputPricing" value="$29 flat one-time app license" oninput="updateAll()" placeholder="e.g. $19 flat fee / $10/mo" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-amber-500 transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">User Feedback & Feature Requests</label>
+                        <textarea id="inputFeedback" rows="2" oninput="updateAll()" placeholder="What did your user say or request?" class="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-slate-100 text-xs focus:outline-none focus:border-amber-500 transition custom-scrollbar">Processed 45 tax receipts in under 2 minutes. Asked for direct QuickBooks CSV export next.</textarea>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Right Panel: Real-time Markdown Submission Preview -->
+        <section class="lg:col-span-6 flex flex-col h-full space-y-4">
+            
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl flex flex-col flex-1 relative border border-slate-800">
+                
+                <!-- Terminal Header Bar -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                        <span class="text-xs text-slate-400 font-mono ml-2">hackathon_submission.md</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="copyToClipboard()" id="btnCopy" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center space-x-1.5 shadow-md">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>Copy Text</span>
+                        </button>
+                        <button onclick="exportMarkdownFile()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center space-x-1.5">
+                            <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <span>Export .md</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Markdown Content Container -->
+                <div id="markdownOutput" class="flex-1 bg-slate-950/90 border border-slate-800/80 rounded-2xl p-5 font-mono text-xs sm:text-sm text-slate-300 leading-relaxed overflow-y-auto custom-scrollbar select-all whitespace-pre-wrap min-h-[400px]">
+                    <!-- Rendered content here -->
+                </div>
+
+                <!-- Live Footer Counter -->
+                <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+                    <div class="flex items-center space-x-1.5">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Hackathon Submission Template Ready</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span id="wordCount">0 Words</span>
+                        <span>&bull;</span>
+                        <span id="charCount">0 Chars</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
+        Open-Source AI Side-Hustle Hackathon Assistant &bull; Built with Tailwind CSS & JavaScript
+    </footer>
+
+    <!-- Application Scripting -->
+    <script>
+        // Preset Data
+        const presets = {
+            invoice: {
+                name: "LedgerVault AI",
+                model: "Llama 3.1 8B Instruct (Meta)",
+                framework: "Ollama + Local Python SDK",
+                offline: true,
+                zeroCost: true,
+                target: "Freelancers & Small Contractors",
+                problem: "Spending hours sorting through tax invoices, client receipts, and manually copying dates and totals into accounting software.",
+                solution: "Processes scanned PDFs/images locally using local OCR and Llama-3.1 to extract vendors, tax totals, and category tags directly into clean CSV files.",
+                privacy: "Client financial records stay strictly on the local laptop—zero cloud upload or leak risk.",
+                economic: "Unlimited bulk receipt sorting with $0 per-token charges, allowing flat-rate pricing.",
+                status: "Tested with 1st Live User",
+                pricing: "$29 flat one-time app license",
+                feedback: "Processed 45 tax receipts in under 2 minutes. Asked for direct QuickBooks CSV export next."
+            },
+            etsy: {
+                name: "CraftSEO Local Agent",
+                model: "Mistral 7B v0.3 / Hermes 2",
+                framework: "LangChain / LangGraph (Open Source)",
+                offline: false,
+                zeroCost: true,
+                target: "Etsy & eBay Vintage/Handmade Sellers",
+                problem: "Writing unique, keyword-rich SEO product descriptions and tag suggestions for dozens of handmade items is exhausting and time-consuming.",
+                solution: "Takes item photo descriptions & bullet points to generate Etsy-optimized titles, structured tags, and storytelling descriptions.",
+                privacy: "Protects custom handmade designs and proprietary crafting descriptions from public model training datasets.",
+                economic: "Fine-tuned open-weights specifically on high-converting Etsy listing structures without per-token GPT-4 fees.",
+                status: "Beta Testing with Community",
+                pricing: "$12/month flat rate",
+                feedback: "A local ceramic artist generated 15 product listings in under 10 minutes and loved the automatic keyword tag engine."
+            },
+            menu: {
+                name: "MenuTranslate Offline",
+                model: "Phi-3.5 Mini (Microsoft - 3.8B)",
+                framework: "llama.cpp / Native C++ Binding",
+                offline: true,
+                zeroCost: true,
+                target: "Local Ethnic Restaurants & Tourist Cafes",
+                problem: "Translating authentic regional dish names into foreign languages while accurately explaining unique ingredients and dietary warnings.",
+                solution: "Runs a lightweight 3.8B model locally on a low-cost tablet to translate menu items with rich culinary explanations without internet dependency.",
+                privacy: "Keeps secret family recipe notes and custom menu pricing safe on local hardware.",
+                economic: "Requires zero cloud server overhead, running seamlessly on inexpensive local tablet hardware.",
+                status: "Tested with 1st Live User",
+                pricing: "$49 flat setup fee",
+                feedback: "Owner of a local authentic bistro tested it during peak hours offline. Requested printable QR code export for customers next."
+            },
+            leads: {
+                name: "HyperLocal Lead Agent",
+                model: "Qwen 2.5 Coder 7B",
+                framework: "CrewAI Local Multi-Agent",
+                offline: false,
+                zeroCost: true,
+                target: "Freelance Web Developers & Agencies",
+                problem: "Manually searching local business directories to find small business websites needing modern redesigns or mobile upgrades.",
+                solution: "Scrapes public directory listings locally, evaluates site responsiveness with Python, and draft hyper-personalized outreach emails.",
+                privacy: "Protects target prospect lists and custom outreach pitch templates from competitor scraping.",
+                economic: "Automates hundreds of multi-step agent reasoning loops per day without running up massive OpenAI API bills.",
+                status: "Validating with Target Clients",
+                pricing: "$39/month unlimited agent runs",
+                feedback: "Generated 30 tailored outreach emails for local dentists and plumbers in 5 minutes. User asked for automated CRM sync next."
+            }
+        };
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        function togglePresetMenu() {
+            const menu = document.getElementById('presetMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close preset menu on outside click
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('presetMenu');
+            const button = e.target.closest('button[onclick="togglePresetMenu()"]');
+            if (!button && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function loadPreset(key) {
+            const data = presets[key];
+            if (!data) return;
+
+            document.getElementById('inputProjName').value = data.name;
+            document.getElementById('selectModel').value = data.model;
+            document.getElementById('selectFramework').value = data.framework;
+            document.getElementById('checkOffline').checked = data.offline;
+            document.getElementById('checkZeroCost').checked = data.zeroCost;
+            document.getElementById('inputTarget').value = data.target;
+            document.getElementById('inputProblem').value = data.problem;
+            document.getElementById('inputSolution').value = data.solution;
+            document.getElementById('inputPrivacy').value = data.privacy;
+            document.getElementById('inputEconomic').value = data.economic;
+            document.getElementById('selectStatus').value = data.status;
+            document.getElementById('inputPricing').value = data.pricing;
+            document.getElementById('inputFeedback').value = data.feedback;
+
+            document.getElementById('presetMenu').classList.add('hidden');
+            updateAll();
+            showToast(`Loaded "${data.name}" template!`);
+        }
+
+        function resetForm() {
+            loadPreset('invoice');
+            showToast("Reset form to default template.");
+        }
+
+        function calculateViability() {
+            const model = document.getElementById('selectModel').value;
+            const isOffline = document.getElementById('checkOffline').checked;
+            const isZeroCost = document.getElementById('checkZeroCost').checked;
+
+            // RAM Calculation
+            let ram = "8 GB RAM";
+            if (model.includes("Phi-3.5")) ram = "4 GB RAM";
+            else if (model.includes("7B") || model.includes("8B")) ram = "8 GB - 12 GB RAM";
+
+            // Offline Score
+            const offlineText = isOffline ? "100% Local" : "Hybrid Cloud";
+
+            // Profit Score calculation
+            let profit = 70;
+            if (isZeroCost) profit += 15;
+            if (isOffline) profit += 10;
+            if (document.getElementById('inputPricing').value.length > 3) profit += 5;
+
+            document.getElementById('ramEstimate').innerText = ram;
+            document.getElementById('offlineScore').innerText = offlineText;
+            document.getElementById('profitIndex').innerText = `${profit} / 100`;
+
+            const badge = document.getElementById('scoreBadge');
+            if (profit >= 85) {
+                badge.innerText = "High Potential";
+                badge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else {
+                badge.innerText = "Moderate";
+                badge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            }
+        }
+
+        function updateAll() {
+            calculateViability();
+
+            const name = document.getElementById('inputProjName').value || "[Project Name]";
+            const model = document.getElementById('selectModel').value;
+            const framework = document.getElementById('selectFramework').value;
+            const offline = document.getElementById('checkOffline').checked;
+            const zeroCost = document.getElementById('checkZeroCost').checked;
+
+            const target = document.getElementById('inputTarget').value || "[Target Persona]";
+            const problem = document.getElementById('inputProblem').value || "[Problem Statement]";
+            const solution = document.getElementById('inputSolution').value || "[Solution Description]";
+
+            const privacy = document.getElementById('inputPrivacy').value || "[Privacy Benefit]";
+            const economic = document.getElementById('inputEconomic').value || "[Economic Edge]";
+
+            const status = document.getElementById('selectStatus').value;
+            const pricing = document.getElementById('inputPricing').value || "[Pricing Model]";
+            const feedback = document.getElementById('inputFeedback').value || "[User Feedback]";
+
+            const markdown = `## 🚀 Submission: ${name}
+**Theme:** Side Hustle - Practical AI Tools People Will Pay For
+
+---
+
+### 💡 1. The Core Idea & Target User
+- **Target User:** ${target}
+- **The Tedious Problem:** ${problem}
+- **How It Works:** ${solution}
+
+---
+
+### ⚙️ 2. Open-Source AI Stack
+- **Open-Weight Model:** \`${model}\`
+- **Agent Harness / Framework:** \`${framework}\`
+- **Execution Mode:** ${offline ? "🔒 100% Local / Offline Capable" : "🌐 Self-Hosted API"}
+- **Cost Overhead:** ${zeroCost ? "⚡ $0 Per-Token Operating Cost" : "📉 Minimal Compute Overhead"}
+
+---
+
+### 🔓 3. Why Open Innovation Made This Project Better
+1. **Data Privacy & Control:** ${privacy}
+2. **Economic Viability & Customization:** ${economic}
+3. **Closed vs. Open Edge:** Unlike closed API alternatives (e.g., OpenAI / Claude) which introduce recurring token costs and privacy concerns for client data, running open weights locally allows us to offer flat-rate pricing while maintaining complete data confidentiality.
+
+---
+
+### 🏆 4. Real-World Validation & First User
+- **Testing Status:** ${status}
+- **Monetization Model:** ${pricing}
+- **User Feedback & Requests:** ${feedback}`;
+
+            const container = document.getElementById('markdownOutput');
+            container.innerText = markdown;
+
+            // Update Counters
+            const words = markdown.trim().split(/\s+/).filter(Boolean).length;
+            const chars = markdown.length;
+            document.getElementById('wordCount').innerText = `${words} Words`;
+            document.getElementById('charCount').innerText = `${chars} Chars`;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('markdownOutput').innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('btnCopy');
+                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Copied!</span>`;
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-emerald-600');
+                
+                showToast("Submission Markdown copied to clipboard!");
+
+                setTimeout(() => {
+                    btn.innerHTML = `<i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy Text</span>`;
+                    btn.classList.remove('bg-emerald-600');
+                    btn.classList.add('bg-indigo-600');
+                    lucide.createIcons();
+                }, 2000);
+            } catch (err) {
+                showToast("Failed to copy text.");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function exportMarkdownFile() {
+            const text = document.getElementById('markdownOutput').innerText;
+            const projName = (document.getElementById('inputProjName').value || 'submission').toLowerCase().replace(/\s+/g, '_');
+            const blob = new Blob([text], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projName}_hackathon_submission.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Exported .md file successfully!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-[-150%]');
+            toast.classList.add('translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0');
+                toast.classList.add('translate-y-[-150%]');
+            }, 3000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            updateAll();
+        };
+    </script>
+</body>
+</html>
